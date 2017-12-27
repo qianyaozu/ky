@@ -62,7 +62,12 @@ func get(body qcommon.PostData) (interface{}, error) {
 	collection := session.DB(body.DBName).C(body.Table)
 	var query *mgo.Query
 	query.SetMaxTime(5 * time.Minute) //5分钟
-	query = collection.Find(data)
+	if body.ObjectID!=""{
+		collection.Find(bson.M{"_id": bson.ObjectIdHex(body.ObjectID)})
+	}else{
+		query = collection.Find(data)
+	}
+
 	if body.OrderBy != "" {
 		query = query.Sort(body.OrderBy)
 	}
@@ -102,7 +107,9 @@ func update(body qcommon.PostData) (interface{}, error) {
 	if body.Condition == nil {
 		return nil, errors.New("bad request:body.Condition can't be empty")
 	}
+
 	condition, ok := body.Condition.(map[string]interface{})
+
 	if !ok {
 		return nil, errors.New("bad request:condition type is not map[string]interface{}   but a " + reflect.TypeOf(body.Condition).Name())
 	}
@@ -115,9 +122,18 @@ func update(body qcommon.PostData) (interface{}, error) {
 	data["update_at"] = time.Now().Unix()
 
 	if body.UpdateAll {
-		_, err = collection.UpdateAll(condition, bson.M{"$set": data})
+		if body.ObjectID != "" {
+			collection.UpdateAll(bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}, bson.M{"$set": data})
+		} else {
+			_, err = collection.UpdateAll(condition, bson.M{"$set": data})
+		}
+
 	} else {
-		err = collection.Update(condition, bson.M{"$set": data})
+		if body.ObjectID != "" {
+			err = collection.Update(bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}, bson.M{"$set": data})
+		} else {
+			err = collection.Update(condition, bson.M{"$set": data})
+		}
 	}
 	if err != nil {
 		return nil, err
