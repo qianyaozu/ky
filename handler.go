@@ -61,7 +61,7 @@ func get(body qcommon.PostData) (interface{}, error) {
 	defer session.Close()
 	collection := session.DB(body.DBName).C(body.Table)
 	var query *mgo.Query
-	query.SetMaxTime(5 * time.Minute) //5分钟
+	//query.SetMaxTime(5 * time.Minute) //5分钟
 	if body.ObjectID!=""{
 		collection.Find(bson.M{"_id": bson.ObjectIdHex(body.ObjectID)})
 	}else{
