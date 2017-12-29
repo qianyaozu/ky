@@ -11,8 +11,13 @@
     "build": "node build/build.js"
   },
   "dependencies": {
+    "axios": "^0.17.1",
+    "axios-mock-adapter": "^1.10.0",
+    "element-ui": "^2.0.5",
+    "mockjs": "^1.0.1-beta3",
     "vue": "^2.5.2",
-    "vue-router": "^3.0.1"
+    "vue-router": "^3.0.1",
+    "vuex": "^3.0.1"
   },
   "devDependencies": {
     "babel-eslint": "^7.1.1",
