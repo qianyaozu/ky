@@ -9,12 +9,14 @@ import (
 	"net/http"
 	"reflect"
 	"time"
+	"fmt"
 )
 
 func handleServer() {
 	gin.SetMode(gin.ReleaseMode)
 	router := gin.Default()
 	router.Use(gin.Recovery())
+	router.POST("/api/login", login)
 	router.POST("/api/common", common)
 	router.POST("/api/upload", upload)
 	router.Run(":" + Port)
@@ -100,19 +102,31 @@ func get(body qcommon.PostData) (interface{}, error) {
 }
 
 func update(body qcommon.PostData) (interface{}, error) {
-	data, ok := body.Data.(map[string]interface{})
+	d, ok := body.Data.(map[string]interface{})
 	if !ok {
 		return nil, errors.New("bad request:data type is not map[string]interface{} but a " + reflect.TypeOf(body.Data).Name())
 	}
-	if body.Condition == nil {
-		return nil, errors.New("bad request:body.Condition can't be empty")
+	var data=make(map[string]interface{})
+	for k,v:=range d {
+		if k != "_id" {
+			data[k] = v
+		}
 	}
-
-	condition, ok := body.Condition.(map[string]interface{})
-
-	if !ok {
-		return nil, errors.New("bad request:condition type is not map[string]interface{}   but a " + reflect.TypeOf(body.Condition).Name())
+	var query = make(map[string]interface{})
+	if body.ObjectID != "" {
+		query = bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}
+	} else {
+		if body.Condition == nil {
+			return nil, errors.New("bad request:body.Condition can't be empty")
+		} else {
+			if condition, ok := body.Condition.(map[string]interface{}); ok {
+				query = condition
+			} else {
+				return nil, errors.New("bad request:body.Condition is not map[string]interface{}  but a " + reflect.TypeOf(body.Data).Name())
+			}
+		}
 	}
+	fmt.Println(query,body)
 	session, err := qcommon.InitMongo(DBServer)
 	if err != nil {
 		return nil, err
@@ -122,18 +136,10 @@ func update(body qcommon.PostData) (interface{}, error) {
 	data["update_at"] = time.Now().Unix()
 
 	if body.UpdateAll {
-		if body.ObjectID != "" {
-			collection.UpdateAll(bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}, bson.M{"$set": data})
-		} else {
-			_, err = collection.UpdateAll(condition, bson.M{"$set": data})
-		}
+		_, err = collection.UpdateAll(query, bson.M{"$set": data})
 
 	} else {
-		if body.ObjectID != "" {
-			err = collection.Update(bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}, bson.M{"$set": data})
-		} else {
-			err = collection.Update(condition, bson.M{"$set": data})
-		}
+		err = collection.Update(query, bson.M{"$set": data})
 	}
 	if err != nil {
 		return nil, err
@@ -158,7 +164,6 @@ func count(body qcommon.PostData) (interface{}, error) {
 	return query.Count()
 }
 func add(body qcommon.PostData) (interface{}, error) {
-
 	if data, ok := body.Data.(map[string]interface{}); ok {
 		session, err := qcommon.InitMongo(DBServer)
 		if err != nil {
@@ -191,14 +196,25 @@ func add(body qcommon.PostData) (interface{}, error) {
 	}
 }
 func addFunc(data map[string]interface{}, body qcommon.PostData, session *mgo.Session) error {
+	data["create_at"] = time.Now().Unix()
 	collection := session.DB(body.DBName).C(body.Table)
-	if body.Condition != nil {
+	query := make(map[string]interface{})
+	if body.ObjectID != "" {
+		query = bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}
+
+	} else if body.Condition != nil {
+
 		if condition, ok := body.Condition.(map[string]interface{}); ok {
-			_, err := collection.Upsert(condition, bson.M{"$set": data})
-			return err
+			query = condition
 		} else {
 			return errors.New("bad request:body.Condition is not map[string]interface{}  but a " + reflect.TypeOf(body.Data).Name())
 		}
+	}
+	count, err := collection.Find(query).Count()
+	if err != nil {
+		return err
+	} else if count > 0 {
+		return errors.New("该记录已经存在")
 	} else {
 		return collection.Insert(data) //插入数据
 	}
@@ -238,4 +254,31 @@ func upload(c *gin.Context) {
 	c.JSON(http.StatusOK, qcommon.ResponseJson(true, nil))
 }
 
+//endregion
+
+
+//region登陆
+func login(c *gin.Context) {
+	type Login struct {
+		UserName string
+		Password string
+	}
+	type UserInfo struct{
+		UserName string
+		MineName string
+		Token int64
+	}
+	var user Login
+	c.Bind(&user)
+	if user.UserName == UserName && user.Password == Password {
+		var user UserInfo
+		user.UserName=UserName
+		user.MineName=MineName
+		user.Token=time.Now().Unix()
+
+		c.JSON(http.StatusOK, qcommon.ResponseJson(user, nil))
+	} else {
+		c.JSON(http.StatusOK, qcommon.ResponseJson(nil, errors.New("login failed")))
+	}
+}
 //endregion

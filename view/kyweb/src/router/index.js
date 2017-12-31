@@ -3,7 +3,8 @@ import Router from 'vue-router'
 import Main from '@/views/Main'
 import Login from '@/views/Login'
 import Demo from '@/components/Demo'
-import Script from '@/components/Script'
+import WorkPlace from '@/components/WorkPlace'
+import FrameSet from '@/components/Frame_Set'
 Vue.use(Router)
 
 export default new Router({
@@ -11,7 +12,7 @@ export default new Router({
     {
       path: '/Main',
       name: 'Main',
-      redirect: '/Demo',
+      redirect: '/Main',
       component: Main,
       children: [
         {
@@ -21,9 +22,15 @@ export default new Router({
           hidden: true
         },
         {
-          path: '/Script',
-          name: 'Script',
-          component: Script,
+          path: '/WorkPlace',
+          name: 'WorkPlace',
+          component: WorkPlace,
+          hidden: true
+        },
+        {
+          path: '/Frame_Set',
+          name: 'Frame_Set',
+          component: FrameSet,
           hidden: true
         }
       ]

@@ -7,10 +7,10 @@
       </el-col>
         <el-col :span="17">
           <el-menu class="el-menu-demo" mode="horizontal" :router="true" :default-active="CurrentPath" @select="selectMenu">
-              <el-menu-item index="/Script" >系统</el-menu-item>
+              <el-menu-item index="/WorkPlace" >系统</el-menu-item>
             <el-submenu index="2">
               <template slot="title">配置</template>
-              <el-menu-item index="/Config" >配置1</el-menu-item>
+              <el-menu-item index="/WorkPlace" >工作面配置</el-menu-item>
               <el-menu-item index="/Config1" >配置2</el-menu-item>
             </el-submenu>
             <el-menu-item index="/Demo" >Demo</el-menu-item>

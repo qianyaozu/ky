@@ -51,6 +51,7 @@
             this.$message.error(res.data.Messgae)
             return
           }
+          alert(res.data.Data.MineName)
           SetStore('UserName', res.data.Data.UserName)
           SetStore('MineName', res.data.Data.MineName)
           SetStore('Token', res.data.Data.Token)

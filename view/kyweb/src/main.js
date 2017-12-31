@@ -7,11 +7,12 @@ import './assets/css/index.css'
 import App from './App'
 import router from './router'
 import store from './vuex/store'
-import Mock from './mockjs/index'
+// import Mock from './mockjs/index'
+
 Vue.config.productionTip = false
 Vue.use(elementui)
 
-Mock.bootstrap()
+// Mock.bootstrap()
 router.beforeEach((to, from, next) => {
   next()
 })

@@ -12,13 +12,17 @@ export default {
       })
     })
 
-    mock.onGet('/api/getScripts').reply(config => {
+    mock.onPost('/api/common').reply(config => {
       return new Promise((resolve, reject) => {
         var tableData = []
         for (let i = 0; i < 15; i++) {
           tableData.push({
-            ID: Mock.mock('@string()'),
+            ID: 0,
             Name: Mock.mock('@cname'),
+            DipLength: 0,
+            Capacity: 0,
+            Thickness: 0,
+            Length: 0,
             CreateTime: Mock.mock('@date("yyyy-MM-dd")')
           })
         }
