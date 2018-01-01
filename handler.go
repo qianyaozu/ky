@@ -10,6 +10,8 @@ import (
 	"reflect"
 	"time"
 	"fmt"
+	"os/exec"
+	"sync"
 )
 
 func handleServer() {
@@ -19,6 +21,10 @@ func handleServer() {
 	router.POST("/api/login", login)
 	router.POST("/api/common", common)
 	router.POST("/api/upload", upload)
+	router.POST("/api/backup",backup)
+	router.POST("/api/restore",restore)
+	router.POST("/api/startcommunication",startcommunication)
+	router.POST("/api/checkcommunication",checkcommunication)
 	router.Run(":" + Port)
 }
 
@@ -28,8 +34,12 @@ func common(c *gin.Context) {
 	err := c.Bind(&body)
 	if err != nil {
 		c.JSON(http.StatusOK, qcommon.ResponseJson(nil, err))
+		return
 	}
 	switch body.Method {
+	case "page":
+		c.JSON(http.StatusOK, qcommon.ResponseJson(page(body)))
+		return
 	case "get":
 		c.JSON(http.StatusOK, qcommon.ResponseJson(get(body)))
 		return
@@ -49,7 +59,48 @@ func common(c *gin.Context) {
 	c.JSON(http.StatusOK, qcommon.ResponseJson(nil, errors.New("bad request:unsupported method")))
 	return
 }
-
+func page(body qcommon.PostData) (interface{}, error) {
+	data, ok := body.Data.(map[string]interface{})
+	if !ok {
+		return nil, errors.New("bad request:data type is not map[string]interface{} but a " + reflect.TypeOf(body.Data).Name())
+	}
+	session, err := qcommon.InitMongo(DBServer)
+	if err != nil {
+		return nil, err
+	}
+	defer session.Close()
+	collection := session.DB(body.DBName).C(body.Table)
+	var query *mgo.Query
+	//query.SetMaxTime(5 * time.Minute) //5分钟
+	query = collection.Find(data)
+	count, err := collection.Find(data).Count()
+	if body.OrderBy != "" {
+		query = query.Sort(body.OrderBy)
+	}
+	if body.Skip != 0 {
+		query = query.Skip(body.Skip)
+	}
+	if body.Limit != 0 {
+		query = query.Limit(body.Limit)
+	}
+	if body.Select != nil {
+		query = query.Select(body.Select)
+	}
+	var res []interface{}
+	if body.Distinct != "" {
+		err = query.Distinct(body.Distinct, &res)
+	} else {
+		err = query.All(&res)
+	}
+	type Page struct {
+		Items []interface{}
+		Count int
+	}
+	var page Page
+	page.Items = res
+	page.Count = count
+	return page, nil
+}
 //根据查询条件查询数据
 func get(body qcommon.PostData) (interface{}, error) {
 	data, ok := body.Data.(map[string]interface{})
@@ -64,11 +115,7 @@ func get(body qcommon.PostData) (interface{}, error) {
 	collection := session.DB(body.DBName).C(body.Table)
 	var query *mgo.Query
 	//query.SetMaxTime(5 * time.Minute) //5分钟
-	if body.ObjectID!=""{
-		collection.Find(bson.M{"_id": bson.ObjectIdHex(body.ObjectID)})
-	}else{
-		query = collection.Find(data)
-	}
+	query = collection.Find(data)
 
 	if body.OrderBy != "" {
 		query = query.Sort(body.OrderBy)
@@ -113,9 +160,7 @@ func update(body qcommon.PostData) (interface{}, error) {
 		}
 	}
 	var query = make(map[string]interface{})
-	if body.ObjectID != "" {
-		query = bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}
-	} else {
+
 		if body.Condition == nil {
 			return nil, errors.New("bad request:body.Condition can't be empty")
 		} else {
@@ -125,7 +170,6 @@ func update(body qcommon.PostData) (interface{}, error) {
 				return nil, errors.New("bad request:body.Condition is not map[string]interface{}  but a " + reflect.TypeOf(body.Data).Name())
 			}
 		}
-	}
 	fmt.Println(query,body)
 	session, err := qcommon.InitMongo(DBServer)
 	if err != nil {
@@ -199,10 +243,7 @@ func addFunc(data map[string]interface{}, body qcommon.PostData, session *mgo.Se
 	data["create_at"] = time.Now().Unix()
 	collection := session.DB(body.DBName).C(body.Table)
 	query := make(map[string]interface{})
-	if body.ObjectID != "" {
-		query = bson.M{"_id": bson.ObjectIdHex(body.ObjectID)}
-
-	} else if body.Condition != nil {
+	if body.Condition != nil {
 
 		if condition, ok := body.Condition.(map[string]interface{}); ok {
 			query = condition
@@ -280,5 +321,66 @@ func login(c *gin.Context) {
 	} else {
 		c.JSON(http.StatusOK, qcommon.ResponseJson(nil, errors.New("login failed")))
 	}
+}
+//endregion
+
+//region 备份还原
+func backup(c *gin.Context) {
+
+	list:=make([]string,0)
+
+	cmd := exec.Command(MongoDBPath+"\\mongodump.exe", list...)
+	err := cmd.Run()
+
+	if err != nil {
+		c.JSON(http.StatusOK, qcommon.ResponseJson(false, err))
+	} else {
+		c.JSON(http.StatusOK, qcommon.ResponseJson(true, nil))
+	}
+}
+func restore(c *gin.Context) {
+	cmd := exec.Command(MongoDBPath+"\\mongorestore.exe", "-d", "ky", "dump/ky")
+	err := cmd.Run()
+	if err != nil {
+		c.JSON(http.StatusOK, qcommon.ResponseJson(false, err))
+	} else {
+		c.JSON(http.StatusOK, qcommon.ResponseJson(true, nil))
+	}
+}
+//endregion
+
+
+//region 开始接收数据
+var IsCommunication=false
+var CommunicateLock sync.RWMutex
+func startcommunication(c *gin.Context) {
+	CommunicateLock.Lock()
+	defer CommunicateLock.Unlock()
+	if IsCommunication {
+		c.JSON(http.StatusOK, qcommon.ResponseJson(false, errors.New("通讯正在进行中")))
+		return
+	}
+	IsCommunication = true
+	//开始通讯
+	go docomcommunication()
+	c.JSON(http.StatusOK, qcommon.ResponseJson(true, nil))
+}
+
+func checkcommunication(c *gin.Context) {
+	CommunicateLock.Lock()
+	defer CommunicateLock.Unlock()
+	if IsCommunication {
+		c.JSON(http.StatusOK, qcommon.ResponseJson(false, errors.New("通讯正在进行中")))
+		return
+	}
+	c.JSON(http.StatusOK, qcommon.ResponseJson(true, nil))
+}
+//执行通讯
+func docomcommunication(){
+	defer func() { IsCommunication = false }()
+}
+
+func doadbcommunication(){
+	defer func() { IsCommunication = false }()
 }
 //endregion

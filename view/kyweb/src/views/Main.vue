@@ -7,13 +7,37 @@
       </el-col>
         <el-col :span="17">
           <el-menu class="el-menu-demo" mode="horizontal" :router="true" :default-active="CurrentPath" @select="selectMenu">
-              <el-menu-item index="/WorkPlace" >系统</el-menu-item>
             <el-submenu index="2">
               <template slot="title">配置</template>
-              <el-menu-item index="/WorkPlace" >工作面配置</el-menu-item>
-              <el-menu-item index="/Config1" >配置2</el-menu-item>
+              <el-menu-item index="/WorkPlace" >工作面</el-menu-item>
+              <el-menu-item index="/FrameSet" >支架</el-menu-item>
+              <el-menu-item index="/PillarSet">支柱</el-menu-item>
+              <el-menu-item index="/DipSet">倾角</el-menu-item>
             </el-submenu>
-            <el-menu-item index="/Demo" >Demo</el-menu-item>
+            <el-submenu index="3">
+              <template slot="title">实时</template>
+              <el-menu-item index="/FrameReal" >支架</el-menu-item>
+            </el-submenu>
+            <el-submenu index="4">
+              <template slot="title">历史</template>
+              <el-menu-item index="/FrameHis">支架</el-menu-item>
+            </el-submenu>
+            <el-submenu index="5">
+              <template slot="title">报表</template>
+              <el-menu-item index="/FrameHis">支架</el-menu-item>
+            </el-submenu>
+            <el-submenu index="6">
+              <template slot="title">工具</template>
+              <el-menu-item index="/Com">串口通讯</el-menu-item>
+              <el-menu-item index="/Adb">手机通讯</el-menu-item>
+              <el-menu-item index="/Backup">备份</el-menu-item>
+              <el-menu-item index="/Restore">还原</el-menu-item>
+            </el-submenu>
+            <el-submenu index="7">
+              <template slot="title">帮助</template>
+              <el-menu-item index="/Help">帮助</el-menu-item>
+              <el-menu-item index="/About">关于</el-menu-item>
+            </el-submenu>
           </el-menu>
         </el-col>
         <el-col :span="3">
@@ -40,14 +64,7 @@
 </template>
 <script>
   import {GetStore, SetStore} from '../vuex/store'
-  import ElFooter from '../../node_modules/element-ui/packages/footer/src/main.vue'
-  import ElContainer from '../../node_modules/element-ui/packages/container/src/main.vue'
-  import ElAside from '../../node_modules/element-ui/packages/aside/src/main.vue'
   export default {
-    components: {
-      ElAside,
-      ElContainer,
-      ElFooter},
     data () {
       return {
         MineName: '量化投资',
