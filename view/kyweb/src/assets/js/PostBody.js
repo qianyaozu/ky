@@ -26,6 +26,19 @@ PostBody.prototype = {
     body.Select = select
     return body
   },
+  Page: function (table, data, orderby, limit, skip, distinct, select) {
+    var body = new PostBody()
+    body.Method = 'page'
+    body.DBName = 'ky'
+    body.Table = table
+    body.Data = data
+    body.orderBy = orderby
+    body.Limit = limit
+    body.Skip = skip
+    body.Distinct = distinct
+    body.Select = select
+    return body
+  },
   Count: function (table, data) {
     var body = new PostBody()
     body.Method = 'count'

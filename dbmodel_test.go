@@ -23,6 +23,7 @@ func TestGet(t *testing.T){
 	fmt.Println(get(postData))
 
 }
+<<<<<<< HEAD
 
 func TestDelete(t *testing.T){
 	var frame =make(map[string]interface{})
@@ -42,4 +43,13 @@ func TestGet1(t *testing.T){
 	defer session.Close()
 	collection := session.DB("ky").C("workplace")
 	fmt.Println(collection.Find(bson.M{"ID": "1"}).Count())
+=======
+func TestGet1(t * testing.T) {
+	session, _ := qcommon.InitMongo(DBServer)
+	collection := session.DB("ky").C("Frame")
+	//query.SetMaxTime(5 * time.Minute) //5分钟
+
+	fmt.Println(collection.Find(bson.D{{"_id", bson.ObjectId("5a498a5ad03c3df26bd9f885")}}).Count())
+	session.Close()
+>>>>>>> 53dc6ec96803f37e6945e33b3bbac3c3dc3a4f19
 }

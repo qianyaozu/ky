@@ -4,7 +4,7 @@ import Main from '@/views/Main'
 import Login from '@/views/Login'
 import Demo from '@/components/Demo'
 import WorkPlace from '@/components/WorkPlace'
-import FrameSet from '@/components/Frame_Set'
+import FrameSet from '@/components/FrameSet'
 Vue.use(Router)
 
 export default new Router({
@@ -28,8 +28,8 @@ export default new Router({
           hidden: true
         },
         {
-          path: '/Frame_Set',
-          name: 'Frame_Set',
+          path: '/FrameSet',
+          name: 'FrameSet',
           component: FrameSet,
           hidden: true
         }

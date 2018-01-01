@@ -9,6 +9,7 @@ var (
 	UserName = "admin"
 	Password = "admin"
 	MineName = "义乌小商品批发市场"
+	MongoDBPath="" //
 )
 
 func init() {
@@ -28,6 +29,7 @@ func LoadConf() {
 	UserName = conf.GetString("UserName")
 	Password = conf.GetString("Password")
 	MineName = conf.GetString("MineName")
+	MongoDBPath = conf.GetString("MongoDBPath")
 	if err != nil {
 		panic(err)
 	}

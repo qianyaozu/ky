@@ -1,2 +1,2 @@
 import mock from './mock'
-export default mock 
+export default mock

@@ -56,11 +56,12 @@
           SetStore('MineName', res.data.Data.MineName)
           SetStore('Token', res.data.Data.Token)
           this.$router.push('/Main')
-        }).catch(err => {
-          this.loading = false
-          this.$message.error('登录失败')
-          console.log(err)
         })
+//          .catch(err => {
+//          this.loading = false
+//          this.$message.error('登录失败')
+//          console.log(err)
+//        })
       }
     },
     created () {
