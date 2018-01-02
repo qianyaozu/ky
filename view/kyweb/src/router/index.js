@@ -5,6 +5,8 @@ import Login from '@/views/Login'
 import Demo from '@/components/Demo'
 import WorkPlace from '@/components/WorkPlace'
 import FrameSet from '@/components/FrameSet'
+import PillarSet from '@/components/PillarSet'
+import DipSet from '@/components/DipSet'
 Vue.use(Router)
 
 export default new Router({
@@ -31,6 +33,18 @@ export default new Router({
           path: '/FrameSet',
           name: 'FrameSet',
           component: FrameSet,
+          hidden: true
+        },
+        {
+          path: '/PillarSet',
+          name: 'PillarSet',
+          component: PillarSet,
+          hidden: true
+        },
+        {
+          path: '/DipSet',
+          name: 'DipSet',
+          component: DipSet,
           hidden: true
         }
       ]

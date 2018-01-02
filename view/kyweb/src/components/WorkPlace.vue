@@ -22,7 +22,7 @@
       <el-table-column prop="Length"  label="回采总长"> </el-table-column>
       <el-table-column prop="create_at"  label="创建时间">
         <template slot-scope="scope">
-          <a href="#">{{ format(scope.row.create_at) }}</a>
+          {{ format(scope.row.create_at) }}
         </template>
       </el-table-column>
     </el-table>
@@ -45,7 +45,7 @@
                 </el-form-item>
                 <el-form-item label="煤层容量" prop="Name">
                   <el-input class="nameStyle" type="number" v-model="AddForm.Capacity" style="width: 85%;"></el-input>
-                  <el-label >m3</el-label>
+                  <el-label >m</el-label>
                 </el-form-item>
                 <el-form-item label="煤层厚度" prop="Name">
                   <el-input class="nameStyle" type="number" v-model="AddForm.Thickness" style="width: 85%;"></el-input>
@@ -53,7 +53,7 @@
                 </el-form-item>
                 <el-form-item label="回采总长" prop="Name">
                   <el-input class="nameStyle" type="number" v-model="AddForm.Length" style="width: 85%;"></el-input>
-                    <el-label >m</el-label>
+                  <el-label >m</el-label>
                 </el-form-item>
 
               </el-row>
@@ -78,7 +78,7 @@
           </el-form-item>
           <el-form-item label="煤层容量" prop="Name">
             <el-input class="nameStyle" type="number" v-model="EditForm.Capacity" style="width: 85%;"></el-input>
-            <el-label >m3</el-label>
+            <el-label >m</el-label>
           </el-form-item>
           <el-form-item label="煤层厚度" prop="Name">
             <el-input class="nameStyle" type="number" v-model="EditForm.Thickness" style="width: 85%;"></el-input>
@@ -109,6 +109,7 @@
 <script>
   import axios from 'axios'
   import PostBody from '../assets/js/PostBody'
+  import {DateFormat} from '../assets/js/Common'
 //  import UtilFormat from 'date-fns/format'
 //  import {GetStore, SetStore} from '../vuex/store'
   export default {
@@ -146,29 +147,32 @@
       }
     },
     methods: {
+      // format (ts) {
+      //   var newDate = new Date()
+      //   newDate.setTime(ts * 1000)
+      //   var date = {
+      //     'M+': newDate.getMonth() + 1,
+      //     'd+': newDate.getDate(),
+      //     'h+': newDate.getHours(),
+      //     'm+': newDate.getMinutes(),
+      //     's+': newDate.getSeconds(),
+      //     'q+': Math.floor((newDate.getMonth() + 3) / 3),
+      //     'S+': newDate.getMilliseconds()
+      //   }
+      //   var format = 'yyyy-MM-dd hh:mm:ss'
+      //   if (/(y+)/i.test(format)) {
+      //     format = format.replace(RegExp.$1, (newDate.getFullYear() + '').substr(4 - RegExp.$1.length))
+      //   }
+      //   for (var k in date) {
+      //     if (new RegExp('(' + k + ')').test(format)) {
+      //       format = format.replace(RegExp.$1, RegExp.$1.length === 1
+      //         ? date[k] : ('00' + date[k]).substr(('' + date[k]).length))
+      //     }
+      //   }
+      //   return format
+      // },
       format (ts) {
-        var newDate = new Date()
-        newDate.setTime(ts * 1000)
-        var date = {
-          'M+': newDate.getMonth() + 1,
-          'd+': newDate.getDate(),
-          'h+': newDate.getHours(),
-          'm+': newDate.getMinutes(),
-          's+': newDate.getSeconds(),
-          'q+': Math.floor((newDate.getMonth() + 3) / 3),
-          'S+': newDate.getMilliseconds()
-        }
-        var format = 'yyyy-MM-dd hh:mm:ss'
-        if (/(y+)/i.test(format)) {
-          format = format.replace(RegExp.$1, (newDate.getFullYear() + '').substr(4 - RegExp.$1.length))
-        }
-        for (var k in date) {
-          if (new RegExp('(' + k + ')').test(format)) {
-            format = format.replace(RegExp.$1, RegExp.$1.length === 1
-              ? date[k] : ('00' + date[k]).substr(('' + date[k]).length))
-          }
-        }
-        return format
+        return DateFormat(ts)
       },
       validate (ob) {
         if (ob.ID === '') {
