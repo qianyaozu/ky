@@ -17,10 +17,12 @@
             <el-submenu index="3">
               <template slot="title">实时</template>
               <el-menu-item index="/FrameReal" >支架</el-menu-item>
+              <el-menu-item index="/PillarReal" >支柱</el-menu-item>
             </el-submenu>
             <el-submenu index="4">
               <template slot="title">历史</template>
               <el-menu-item index="/FrameHis">支架</el-menu-item>
+              <el-menu-item index="/PillarHis" >支柱</el-menu-item>
             </el-submenu>
             <el-submenu index="5">
               <template slot="title">报表</template>
@@ -57,7 +59,7 @@
       </el-main>
     </el-container>
 
-    <el-footer  class="fixed-footer">
+    <el-footer  class="fixed-footer" >
 
     </el-footer>
   </el-container>
@@ -81,6 +83,9 @@
       },
       selectMenu (index) {
         SetStore('CurrentPath', index)
+      },
+      GetAlarm(){
+
       }
     },
     created () {
@@ -90,7 +95,9 @@
       if (this.CurrentPath === '') {
         this.CurrentPath = '/Demo'
       }
-      this.defaultActive = this.CurrentPath
+      // window.setInterval(function(){
+      //   this.GetAlarm()
+      // }, 5000)
     }
   }
 </script>

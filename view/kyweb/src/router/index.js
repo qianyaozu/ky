@@ -7,6 +7,10 @@ import WorkPlace from '@/components/WorkPlace'
 import FrameSet from '@/components/FrameSet'
 import PillarSet from '@/components/PillarSet'
 import DipSet from '@/components/DipSet'
+import FrameReal from '@/components/FrameReal'
+import PillarReal from '@/components/PillarReal'
+import PillarHis from '@/components/PillarHis'
+import FrameHis from '@/components/FrameHis'
 Vue.use(Router)
 
 export default new Router({
@@ -45,6 +49,30 @@ export default new Router({
           path: '/DipSet',
           name: 'DipSet',
           component: DipSet,
+          hidden: true
+        },
+        {
+          path: '/FrameReal',
+          name: 'FrameReal',
+          component: FrameReal,
+          hidden: true
+        },
+        {
+          path: '/PillarReal',
+          name: 'PillarReal',
+          component: PillarReal,
+          hidden: true
+        },
+        {
+          path: '/PillarHis',
+          name: 'PillarHis',
+          component: PillarHis,
+          hidden: true
+        },
+        {
+          path: '/FrameHis',
+          name: 'FrameHis',
+          component: FrameHis,
           hidden: true
         }
       ]
