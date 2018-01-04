@@ -2,7 +2,7 @@ import Vue from 'vue'
 import Router from 'vue-router'
 import Main from '@/views/Main'
 import Login from '@/views/Login'
-import Demo from '@/components/Demo'
+import SystemConfig from '@/components/SystemConfig'
 import WorkPlace from '@/components/WorkPlace'
 import FrameSet from '@/components/FrameSet'
 import PillarSet from '@/components/PillarSet'
@@ -22,9 +22,9 @@ export default new Router({
       component: Main,
       children: [
         {
-          path: '/Demo',
-          name: 'Demo',
-          component: Demo,
+          path: '/SystemConfig',
+          name: 'SystemConfig',
+          component: SystemConfig,
           hidden: true
         },
         {

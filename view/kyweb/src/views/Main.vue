@@ -7,6 +7,7 @@
       </el-col>
         <el-col :span="17">
           <el-menu class="el-menu-demo" mode="horizontal" :router="true" :default-active="CurrentPath" @select="selectMenu">
+            <el-menu-item index="/SystemConfig">系统</el-menu-item>
             <el-submenu index="2">
               <template slot="title">配置</template>
               <el-menu-item index="/WorkPlace" >工作面</el-menu-item>
@@ -93,7 +94,7 @@
       this.MineName = GetStore('MineName')
       this.CurrentPath = GetStore('CurrentPath')
       if (this.CurrentPath === '') {
-        this.CurrentPath = '/Demo'
+        this.CurrentPath = '/SystemConfig'
       }
       // window.setInterval(function(){
       //   this.GetAlarm()
