@@ -2,16 +2,16 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/go-mgo/mgo"
 	"github.com/go-mgo/mgo/bson"
 	"github.com/qianyaozu/qcommon"
 	"net/http"
-	"reflect"
-	"time"
-	"fmt"
 	"os/exec"
+	"reflect"
 	"sync"
+	"time"
 )
 
 func handleServer() {
@@ -21,10 +21,10 @@ func handleServer() {
 	router.POST("/api/login", login)
 	router.POST("/api/common", common)
 	router.POST("/api/upload", upload)
-	router.POST("/api/backup",backup)
-	router.POST("/api/restore",restore)
-	router.POST("/api/startcommunication",startcommunication)
-	router.POST("/api/checkcommunication",checkcommunication)
+	router.POST("/api/backup", backup)
+	router.POST("/api/restore", restore)
+	router.POST("/api/startcommunication", startcommunication)
+	router.POST("/api/checkcommunication", checkcommunication)
 	router.Run(":" + Port)
 }
 
@@ -101,6 +101,7 @@ func page(body qcommon.PostData) (interface{}, error) {
 	page.Count = count
 	return page, nil
 }
+
 //根据查询条件查询数据
 func get(body qcommon.PostData) (interface{}, error) {
 	data, ok := body.Data.(map[string]interface{})
@@ -153,24 +154,24 @@ func update(body qcommon.PostData) (interface{}, error) {
 	if !ok {
 		return nil, errors.New("bad request:data type is not map[string]interface{} but a " + reflect.TypeOf(body.Data).Name())
 	}
-	var data=make(map[string]interface{})
-	for k,v:=range d {
+	var data = make(map[string]interface{})
+	for k, v := range d {
 		if k != "_id" {
 			data[k] = v
 		}
 	}
 	var query = make(map[string]interface{})
 
-		if body.Condition == nil {
-			return nil, errors.New("bad request:body.Condition can't be empty")
+	if body.Condition == nil {
+		return nil, errors.New("bad request:body.Condition can't be empty")
+	} else {
+		if condition, ok := body.Condition.(map[string]interface{}); ok {
+			query = condition
 		} else {
-			if condition, ok := body.Condition.(map[string]interface{}); ok {
-				query = condition
-			} else {
-				return nil, errors.New("bad request:body.Condition is not map[string]interface{}  but a " + reflect.TypeOf(body.Data).Name())
-			}
+			return nil, errors.New("bad request:body.Condition is not map[string]interface{}  but a " + reflect.TypeOf(body.Data).Name())
 		}
-	fmt.Println(query,body)
+	}
+	fmt.Println(query, body)
 	session, err := qcommon.InitMongo(DBServer)
 	if err != nil {
 		return nil, err
@@ -287,7 +288,7 @@ func upload(c *gin.Context) {
 		c.JSON(http.StatusOK, qcommon.ResponseJson(nil, err))
 	}
 	// Upload the file to specific dst.
-	var path = "d:\\" + file.Filename
+	var path = Env + "\\Upload\\" + fmt.Sprint(time.Now().Unix()) + file.Filename
 	err = c.SaveUploadedFile(file, path)
 	if err != nil {
 		c.JSON(http.StatusOK, qcommon.ResponseJson(nil, err))
@@ -297,39 +298,36 @@ func upload(c *gin.Context) {
 
 //endregion
 
-
 //region登陆
 func login(c *gin.Context) {
 	type Login struct {
 		UserName string
 		Password string
 	}
-	type UserInfo struct{
+	type UserInfo struct {
 		UserName string
 		MineName string
-		Token int64
+		Token    int64
 	}
 	var user Login
 	c.Bind(&user)
 	if user.UserName == UserName && user.Password == Password {
 		var user UserInfo
-		user.UserName=UserName
-		user.MineName=MineName
-		user.Token=time.Now().Unix()
+		user.UserName = UserName
+		user.MineName = MineName
+		user.Token = time.Now().Unix()
 
 		c.JSON(http.StatusOK, qcommon.ResponseJson(user, nil))
 	} else {
 		c.JSON(http.StatusOK, qcommon.ResponseJson(nil, errors.New("login failed")))
 	}
 }
+
 //endregion
 
 //region 备份还原
 func backup(c *gin.Context) {
-
-	list:=make([]string,0)
-
-	cmd := exec.Command(MongoDBPath+"\\mongodump.exe", list...)
+	cmd := exec.Command(MongoDBPath+"\\mongodump.exe", "-o", MongoDBPath+`\dump`)
 	err := cmd.Run()
 
 	if err != nil {
@@ -339,7 +337,7 @@ func backup(c *gin.Context) {
 	}
 }
 func restore(c *gin.Context) {
-	cmd := exec.Command(MongoDBPath+"\\mongorestore.exe", "-d", "ky", "dump/ky")
+	cmd := exec.Command(MongoDBPath+"\\mongorestore.exe", "-d", "ky", MongoDBPath+"/dump/ky")
 	err := cmd.Run()
 	if err != nil {
 		c.JSON(http.StatusOK, qcommon.ResponseJson(false, err))
@@ -347,12 +345,13 @@ func restore(c *gin.Context) {
 		c.JSON(http.StatusOK, qcommon.ResponseJson(true, nil))
 	}
 }
+
 //endregion
 
-
 //region 开始接收数据
-var IsCommunication=false
+var IsCommunication = false
 var CommunicateLock sync.RWMutex
+
 func startcommunication(c *gin.Context) {
 	CommunicateLock.Lock()
 	defer CommunicateLock.Unlock()
@@ -375,12 +374,14 @@ func checkcommunication(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, qcommon.ResponseJson(true, nil))
 }
+
 //执行通讯
-func docomcommunication(){
+func docomcommunication() {
 	defer func() { IsCommunication = false }()
 }
 
-func doadbcommunication(){
+func doadbcommunication() {
 	defer func() { IsCommunication = false }()
 }
+
 //endregion
